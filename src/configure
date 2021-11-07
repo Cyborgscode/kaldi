@@ -588,12 +588,6 @@ OPENBLASCLAPACKROOT=
 # libraries will run. It is set by the configure script when cross compiling.
 HOST=
 
-# These environment variables can be used to override the default toolchain.
-CXX=${CXX:-g++}
-AR=${AR:-ar}
-AS=${AS:-as}
-RANLIB=${RANLIB:-ranlib}
-
 # These environment variables can be used to provide additional flags to the
 # compiler/linker. We want these flags to override the flags determined by the
 # configure script, so we append them to the appropriate variables (CXXFLAGS,
@@ -811,11 +805,6 @@ fi
 # - Otherwise we take its value as the target architecture
 # Otherwise we set the target architecture to the output of `uname -m`.
 if is_set $HOST; then
-#  CXX="$HOST-$CXX"
-  AR="$HOST-$AR"
-  AS="$HOST-$AS"
-  RANLIB="$HOST-$RANLIB"
-
   # The host triple will be something like "armv8-rpi3-linux-gnueabihf". We
   # need the first field which is the target architecture for this build. The
   # following command will take the host triple "armv8-rpi3-linux-gnueabihf"
@@ -823,11 +812,6 @@ if is_set $HOST; then
   IFS='-' read -ra PARTS <<< "$HOST"
 
   if [[ "$HOST" != WASM ]]; then
-    CXX="$HOST-$CXX"
-    AR="$HOST-$AR"
-    AS="$HOST-$AS"
-    RANLIB="$HOST-$RANLIB"
-
     # The first field in the PARTS list is the target architecture.
     TARGET_ARCH="$PARTS"
     if [[ "$TARGET_ARCH" != aarch64* && "$TARGET_ARCH" != arm* && "$TARGET_ARCH" != ppc64le && \
@@ -840,9 +824,24 @@ if is_set $HOST; then
   else
     TARGET_ARCH="$HOST"
   fi
+
+  HOST_CXX="$HOST-c++"
+  HOST_AR="$HOST-ar"
+  HOST_AS="$HOST-as"
+  HOST_RANLIB="$HOST-ranlib"
 else
   TARGET_ARCH="`uname -m`"
+  HOST_CXX=c++
+  HOST_AR=ar
+  HOST_AS=as
+  HOST_RANLIB=ranlib
 fi
+
+# These environment variables can be used to override the default toolchain.
+CXX=${CXX:-$HOST_CXX}
+AR=${AR:-$HOST_AR}
+AS=${AS:-$HOST_AS}
+RANLIB=${RANLIB:-$HOST_RANLIB}
 
 #------------------------------------------------------------------------------
 # Matrix algebra library selection and validation.
